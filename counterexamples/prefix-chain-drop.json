@@ -1,0 +1,12 @@
+{
+  "defect": "longest_prefix dropped shallower blocks",
+  "minimal_sequence": [
+    {"op": "insert", "tokens": [1], "block": 10},
+    {"op": "insert", "tokens": [1, 2], "block": 20},
+    {"op": "longest_prefix", "tokens": [1, 2, 3]}
+  ],
+  "observed": "(2, [20])",
+  "expected": "(2, [10, 20])",
+  "invariant_violated": "I1 (longest-prefix correctness): all matching blocks returned in root-to-leaf order",
+  "fix": "collect every matching block on the path, not only the deepest"
+}
