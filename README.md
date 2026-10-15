@@ -42,9 +42,9 @@ Four subsystems compose into the policy core. On a reuse **hit**, data flows top
 ```mermaid
 flowchart TD
     T["request tokens"] --> PI["<b>PrefixIndex</b><br/>longest-prefix lookup<br/><i>radix trie · block_key</i>"]
-    PI -->|matched block ids| BM["<b>BlockManager</b><br/>retention / eviction policy<br/><i>priority · duration-TTL · LRU</i>"]
-    BM -->|block id (acquire / allocate)| POOL["<b>KvPool</b><br/>block byte storage<br/><i>CpuPool · CudaPool</i>"]
-    POOL -->|KV bytes| OUT["attention / decode"]
+    PI -->|"matched block ids"| BM["<b>BlockManager</b><br/>retention / eviction policy<br/><i>priority · duration-TTL · LRU</i>"]
+    BM -->|"block id (acquire / allocate)"| POOL["<b>KvPool</b><br/>block byte storage<br/><i>CpuPool · CudaPool</i>"]
+    POOL -->|"KV bytes"| OUT["attention / decode"]
 ```
 
 The TTL cache `MiniCache` is the foundation the other three build on.
