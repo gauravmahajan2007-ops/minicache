@@ -1,0 +1,24 @@
+   Compiling minicache v0.1.0 (/home/purvansh/Projects/minicache-rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/_red_demo.rs (target/debug/deps/_red_demo-08a45e93018081f5)
+
+running 1 test
+test boundary_against_faulty_fixture_detects_defect ... FAILED
+
+failures:
+
+---- boundary_against_faulty_fixture_detects_defect stdout ----
+
+thread 'boundary_against_faulty_fixture_detects_defect' (28997) panicked at tests/_red_demo.rs:14:5:
+assertion `left == right` failed
+  left: Some(1)
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    boundary_against_faulty_fixture_detects_defect
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test _red_demo`

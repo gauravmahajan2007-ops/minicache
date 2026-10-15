@@ -1,0 +1,12 @@
+{
+  "defect": "expiry comparison used '>' instead of '>='",
+  "minimal_sequence": [
+    {"op": "put", "key": "k", "value": "v", "ttl": 10},
+    {"op": "advance", "delta": 10},
+    {"op": "get", "key": "k"}
+  ],
+  "observed": "returned the value (buggy)",
+  "expected": "None (absent/expired)",
+  "invariant_violated": "I2 (liveness boundary): key must be unreadable at now >= expiry",
+  "fix": "change the expiry comparison from '>' to '>=' in get()"
+}
