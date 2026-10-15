@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniCache — Diagrams</title>
+<style>
+  :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); padding: 48px 24px; }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { letter-spacing: -0.02em; margin-bottom: 4px; }
+  p.sub { color: var(--muted); margin-top: 0; line-height: 1.5; }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px 20px; margin: 14px 0; transition: border-color .15s, transform .15s;
+  }
+  a.card:hover { border-color: #60a5fa; transform: translateY(-1px); }
+  a.card h2 { margin: 0 0 6px; font-size: 1.15rem; }
+  a.card p { margin: 0; color: var(--muted); font-size: 0.92rem; line-height: 1.5; }
+  .tag { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: #60a5fa; font-weight: 600; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>MiniCache — Diagrams</h1>
+    <p class="sub">Self-contained HTML/SVG diagrams. Open any file in a browser — no build step,
+    no external dependencies.</p>
+
+    <a class="card" href="architecture.html">
+      <div class="tag">System</div>
+      <h2>Architecture</h2>
+      <p>The four subsystems and the data flow from a token sequence to attention/decode.</p>
+    </a>
+
+    <a class="card" href="block-lifecycle.html">
+      <div class="tag">State machine</div>
+      <h2>Block Lifecycle</h2>
+      <p>Free → Active → Reusable, with acquire/refcount, release, and prioritized-LRU eviction.</p>
+    </a>
+
+    <a class="card" href="reuse-flow.html">
+      <div class="tag">Sequence</div>
+      <h2>Reuse Flow — Hit vs Miss</h2>
+      <p>What happens on a prefix hit (acquire + read, skip recompute) versus a miss (allocate + write).</p>
+    </a>
+  </main>
+</body>
+</html>

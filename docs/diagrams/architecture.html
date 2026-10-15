@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniCache — Architecture</title>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --muted: #94a3b8;
+    --blue: #60a5fa; --green: #34d399; --violet: #a78bfa; --slate: #94a3b8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text);
+    display: flex; flex-direction: column; align-items: center; padding: 40px 24px;
+  }
+  header { max-width: 820px; text-align: center; margin-bottom: 24px; }
+  h1 { margin: 0 0 8px; font-size: 1.75rem; letter-spacing: -0.02em; }
+  p.sub { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.5; }
+  .frame {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px; max-width: 900px; width: 100%;
+  }
+  svg { width: 100%; height: auto; display: block; }
+  .box { fill: #0b1220; stroke: var(--border); stroke-width: 1.5; }
+  .title { fill: var(--text); font-size: 17px; font-weight: 600; }
+  .sub   { fill: var(--muted); font-size: 12.5px; }
+  .tag   { fill: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0.05em; }
+  .arrow { stroke: var(--slate); stroke-width: 1.6; fill: none; }
+  .label { fill: var(--muted); font-size: 12px; }
+  .footnote { max-width: 820px; margin-top: 18px; color: var(--muted); font-size: 0.85rem; line-height: 1.6; text-align: center; }
+  code { background: #0b1220; padding: 1px 6px; border-radius: 5px; font-size: 0.85em; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>MiniCache — System Architecture</h1>
+    <p class="sub">Four small, independently-verified subsystems compose into a KV-cache
+    retention/reuse policy core. Data flows top to bottom on a reuse hit; the same path,
+    with <em>allocate + write</em> instead of <em>acquire + read</em>, serves a miss.</p>
+  </header>
+
+  <div class="frame">
+    <svg viewBox="0 0 820 700" role="img" aria-label="MiniCache architecture data-flow diagram">
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+        </marker>
+      </defs>
+
+      <!-- Request -->
+      <rect class="box" x="270" y="24" width="280" height="56" rx="10"/>
+      <text class="tag" x="290" y="46">INPUT</text>
+      <text class="title" x="410" y="62" text-anchor="middle">request tokens</text>
+
+      <!-- PrefixIndex -->
+      <rect class="box" x="270" y="140" width="280" height="72" rx="10"/>
+      <text class="tag" x="290" y="166" fill="#60a5fa">PREFIXINDEX</text>
+      <text class="title" x="410" y="186" text-anchor="middle">longest-prefix lookup</text>
+      <text class="sub" x="410" y="203" text-anchor="middle">radix trie · block_key hash</text>
+
+      <!-- BlockManager -->
+      <rect class="box" x="270" y="272" width="280" height="72" rx="10"/>
+      <text class="tag" x="290" y="298" fill="#34d399">BLOCKMANAGER</text>
+      <text class="title" x="410" y="318" text-anchor="middle">retention / eviction policy</text>
+      <text class="sub" x="410" y="335" text-anchor="middle">priority · duration-TTL · LRU</text>
+
+      <!-- KvPool -->
+      <rect class="box" x="270" y="404" width="280" height="72" rx="10"/>
+      <text class="tag" x="290" y="430" fill="#a78bfa">KVPOOL</text>
+      <text class="title" x="410" y="450" text-anchor="middle">block byte storage</text>
+      <text class="sub" x="410" y="467" text-anchor="middle">CpuPool · CudaPool (feature)</text>
+
+      <!-- Decode -->
+      <rect class="box" x="270" y="536" width="280" height="56" rx="10"/>
+      <text class="tag" x="290" y="558">OUTPUT</text>
+      <text class="title" x="410" y="574" text-anchor="middle">attention / decode</text>
+
+      <!-- Arrows -->
+      <line class="arrow" x1="410" y1="80"  x2="410" y2="136" marker-end="url(#arr)"/>
+      <line class="arrow" x1="410" y1="212" x2="410" y2="268" marker-end="url(#arr)"/>
+      <line class="arrow" x1="410" y1="344" x2="410" y2="400" marker-end="url(#arr)"/>
+      <line class="arrow" x1="410" y1="476" x2="410" y2="532" marker-end="url(#arr)"/>
+
+      <!-- Arrow labels -->
+      <text class="label" x="422" y="108">token sequence</text>
+      <text class="label" x="422" y="240">matched block ids</text>
+      <text class="label" x="422" y="372">block id (acquire / allocate)</text>
+      <text class="label" x="422" y="504">KV bytes (read / write)</text>
+    </svg>
+  </div>
+
+  <p class="footnote">
+    The TTL cache <code>MiniCache</code> is the foundation the other three subsystems build on.
+    Full specification, design, and per-subsystem reports live in <code>SPEC_*.md</code>,
+    <code>DESIGN_*.md</code>, and <code>REPORT_*.md</code>.
+  </p>
+</body>
+</html>
