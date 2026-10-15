@@ -8,6 +8,8 @@
 //! warnings are expected and silenced here.
 #![allow(dead_code)]
 
+pub mod block_manager_ref;
+
 use std::collections::HashMap;
 use std::hash::Hash;
 

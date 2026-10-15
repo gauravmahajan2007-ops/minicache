@@ -6,6 +6,15 @@
 //!
 //! The authoritative behavioral contract lives in `SPEC.md`; this module is one
 //! concrete (Rust) realization of it.
+//!
+//! The `BlockManager` (see `SPEC_RETENTION.md`) extends this foundation toward
+//! NVIDIA KV-cache retention/eviction semantics.
+
+pub mod block_manager;
+pub mod retention;
+
+pub use block_manager::{BlockId, BlockManager, BlockState};
+pub use retention::{Retention, RetentionError, DEFAULT_PRIORITY, MAX_PRIORITY};
 
 use std::collections::HashMap;
 use std::hash::Hash;

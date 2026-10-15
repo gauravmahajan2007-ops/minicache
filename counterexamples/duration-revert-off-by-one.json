@@ -1,0 +1,13 @@
+{
+  "defect": "duration revert used '>' instead of '>='",
+  "minimal_sequence": [
+    {"op": "allocate"},
+    {"op": "release", "id": 0, "priority": 90, "duration_ms": 10},
+    {"op": "advance", "delta": 10},
+    {"op": "effective_priority", "id": 0}
+  ],
+  "observed": "90 (buggy: priority did not revert at exactly expiry)",
+  "expected": "35 (DEFAULT_PRIORITY)",
+  "invariant_violated": "I2 (duration revert): effective priority reverts to default at now >= expires_at",
+  "fix": "change the duration-revert comparison from '>' to '>='"
+}

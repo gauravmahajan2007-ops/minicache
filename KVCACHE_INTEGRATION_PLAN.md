@@ -1,6 +1,6 @@
 # Plan: Adopting MiniCache toward NVIDIA KV-cache integration
 
-Status: **PLAN — for review, no implementation yet.**
+Status: **APPROVED — implementation in progress (Pass 1 below).**
 Method: Systems Lab (spec → capabilities → invariants → reference model → impl → property tests → repair).
 
 ---
@@ -170,3 +170,43 @@ plan and the scope in §3.
 4. **CUDA binding:** include the feature-gated `CudaPool` seam now (compile-only),
    or keep the first pass pure-CPU and add the seam later?
 5. **Project home:** new `~/Projects/kvcache-labs/` vs. evolving `minicache-rust/`?
+
+---
+
+## 9. Frozen decisions (approved by user, 2026-10-15)
+
+1. **Scope** → build the retention/eviction *policy core* (hardware-agnostic),
+   not a GPU memory manager. ✅
+2. **Semantics** → mirror TensorRT-LLM `KvCacheRetentionConfig` exactly:
+   priority `0..=100` (default **35**), `duration_ms` TTL (priority reverts to
+   default on expiry, block stays reusable), prioritized-LRU eviction. ✅
+3. **Radix prefix reuse** → **deferred to Pass 2.** Pass 1 delivers the
+   retention/eviction policy; prefix *lookup* (which blocks a token prefix maps
+   to) is a distinct subsystem added next.
+4. **CUDA byte-pool seam** → **deferred.** Pass 1 models block *metadata* only
+   (priority/expiry/refcount/state), no tensor bytes; a `KvPool`-style device
+   seam is a later integration layer.
+5. **Project home** → **evolve `minicache-rust/`** in place (new modules
+   alongside the existing TTL cache, which stays as the tested foundation).
+
+## 10. Pass 1 implementation scope (retention/eviction policy core)
+
+Deliverable: `BlockManager` — a fixed-size block pool with two lifecycles and
+TensorRT-LLM-mirroring retention semantics.
+
+- **Blocks** have three states: `Free`, `Active { refcount }`, and
+  `Reusable { priority, expires_at, last_used }`.
+- **Allocation** takes a free block, else evicts the lowest-*effective*-priority
+  reusable block (LRU tie-break).
+- **Release** decrements refcount; at zero the block becomes `Reusable` with the
+  configured `(priority, duration_ms)` retention (`expires_at = now + duration`).
+- **Reuse/acquire** promotes a `Reusable` block back to `Active` (refcount).
+- **Duration TTL** — once `now >= expires_at`, the block's *effective* priority
+  reverts to the default (35); it is **not** evicted, only deprioritized.
+- **Invalidate** force-frees a block (idempotent).
+- **Simulated clock + simulated pressure** (small pool) make eviction
+  deterministic and testable with zero hardware.
+
+Authoritative spec: `SPEC_RETENTION.md`. Capabilities/invariants/acceptance:
+`DESIGN_RETENTION.md`. Verification: independent reference model + proptest
+(impl ≡ oracle) + repair workflow.
