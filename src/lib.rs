@@ -12,11 +12,17 @@
 
 pub mod block_key;
 pub mod block_manager;
+#[cfg(feature = "cuda")]
+pub mod cuda_pool;
+pub mod pool;
 pub mod prefix_index;
 pub mod retention;
 
 pub use block_key::block_key;
 pub use block_manager::{BlockId, BlockManager, BlockState};
+#[cfg(feature = "cuda")]
+pub use cuda_pool::CudaPool;
+pub use pool::{CpuPool, KvPool, PoolError};
 pub use prefix_index::PrefixIndex;
 pub use retention::{Retention, RetentionError, DEFAULT_PRIORITY, MAX_PRIORITY};
 

@@ -1,0 +1,12 @@
+{
+  "defect": "clear_block is a no-op (does not zero the block)",
+  "minimal_sequence": [
+    {"op": "write_block", "block": 0, "data": [1, 2, 3, 4]},
+    {"op": "clear_block", "block": 0},
+    {"op": "read_block", "block": 0}
+  ],
+  "observed": "[1, 2, 3, 4] (stale KV data not zeroed)",
+  "expected": "[0, 0, 0, 0]",
+  "invariant_violated": "I2 (clear): after clear_block, read_block yields all zeros",
+  "fix": "clear_block must zero data[off..off+block_size] (fill(0))"
+}

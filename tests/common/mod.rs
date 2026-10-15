@@ -9,6 +9,7 @@
 #![allow(dead_code)]
 
 pub mod block_manager_ref;
+pub mod pool_ref;
 pub mod prefix_ref;
 
 use std::collections::HashMap;
