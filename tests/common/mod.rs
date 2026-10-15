@@ -77,10 +77,7 @@ impl<K: Eq + Hash, V> ReferenceCache<K, V> {
 
     pub fn size(&self) -> usize {
         let now = self.clock.now();
-        self.entries
-            .values()
-            .filter(|(_, e)| now < *e)
-            .count()
+        self.entries.values().filter(|(_, e)| now < *e).count()
     }
 }
 

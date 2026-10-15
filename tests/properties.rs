@@ -60,8 +60,8 @@ proptest! {
                 }
                 Op::Get(k) => {
                     assert_eq!(
-                        imp.get(&k).map(|v| *v),
-                        oracle.get(&k).map(|v| *v),
+                        imp.get(&k).copied(),
+                        oracle.get(&k).copied(),
                         "get agreement for key {k}"
                     );
                 }
@@ -78,8 +78,8 @@ proptest! {
             assert_eq!(imp.size(), oracle.size(), "size mismatch");
             for k in 0..8i64 {
                 assert_eq!(
-                    imp.get(&k).map(|v| *v),
-                    oracle.get(&k).map(|v| *v),
+                    imp.get(&k).copied(),
+                    oracle.get(&k).copied(),
                     "state mismatch for key {k}"
                 );
             }

@@ -14,14 +14,14 @@ fn boundary_check_impl() -> Option<i64> {
     let mut c = MiniCache::<String, i64>::new();
     c.put("k".to_string(), 1, 10.0).unwrap();
     c.clock_mut().advance(10.0).unwrap();
-    c.get(&"k".to_string()).map(|v| *v)
+    c.get(&"k".to_string()).copied()
 }
 
 fn boundary_check_faulty() -> Option<i64> {
     let mut c = common::FaultyCache::<String, i64>::new();
     c.put("k".to_string(), 1, 10.0).unwrap();
     c.clock_mut().advance(10.0).unwrap();
-    c.get(&"k".to_string()).map(|v| *v)
+    c.get(&"k".to_string()).copied()
 }
 
 #[test]
@@ -39,8 +39,8 @@ fn faulty_fixture_exhibits_the_defect() {
 
 #[test]
 fn saved_counterexample_reproduces_and_now_passes() {
-    let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("counterexamples/boundary-off-by-one.json");
+    let path =
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("counterexamples/boundary-off-by-one.json");
     let raw = std::fs::read_to_string(&path).expect("counterexample committed");
     assert!(raw.contains("expiry comparison used '>' instead of '>='"));
     assert!(raw.contains("\"op\": \"get\""));

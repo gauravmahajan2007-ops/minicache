@@ -108,11 +108,14 @@ fn invalid_ttl_rejected_and_noop() {
     let mut c = cache();
     c.put(key("a"), 1, 10.0).unwrap(); // baseline
     for bad in [0.0, -1.0, -0.5, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
-        assert!(c.put(key("k"), 1, bad).is_err(), "ttl {bad} should be rejected");
+        assert!(
+            c.put(key("k"), 1, bad).is_err(),
+            "ttl {bad} should be rejected"
+        );
     }
     assert_eq!(c.get(&key("k")), None); // nothing stored
     assert_eq!(c.size(), 1); // baseline untouched
-    // precise variant for a finite invalid value (avoid NaN != NaN)
+                             // precise variant for a finite invalid value (avoid NaN != NaN)
     assert!(matches!(c.put(key("k"), 1, -1.0), Err(Error::InvalidTtl(x)) if x == -1.0));
 }
 
