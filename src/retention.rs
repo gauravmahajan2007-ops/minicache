@@ -20,6 +20,8 @@ pub enum RetentionError {
     InvalidDuration(f64),
     /// An operation required the block to be `Active`, but it was not.
     NotActive(BlockId),
+    /// The `BlockId` was out of range for the pool (>= `num_blocks`).
+    InvalidBlock(BlockId),
 }
 
 /// The retention policy assigned to a block when it becomes reusable.

@@ -40,3 +40,24 @@ Unit tests alone are insufficient. The property-based agreement test and the
 eviction-order regression test are the real gates — the subtle bugs (duration
 revert, LRU tie-break, "never evict active") live exactly where unit tests
 under-sample.
+
+## 5. Abstractions / Not modelled (honesty section)
+
+A pass says nothing about what is *not* in the model. Explicitly out of scope
+for `BlockManager`:
+
+- **Concurrency / memory ordering.** The manager is single-threaded, non-`Send`,
+  non-`Sync`, and uses no atomics. It models the *policy* over block metadata,
+  not concurrent refcount drops from multiple CPUs. Real KV caches race
+  `acquire`/`release` across in-flight sequences and device queues; those
+  interleavings (the exact class of bug Brauner's linux-formal models) are NOT
+  modelled here. Property tests replay *sequential* operation sequences.
+- **Pool-byte coordination.** `invalidate` frees a block's *metadata*; zeroing
+  the backing bytes (`KvPool::clear_block`) is a separate, caller-owned step.
+  Stale-KV leakage on free is exercised in `tests/pool_repair.rs`, not here.
+- **Out-of-range `BlockId`.** The mutating methods (`release` → `InvalidBlock`,
+  `acquire` → `false`, `invalidate` → no-op) guard out-of-range ids; the read
+  queries (`state`, `is_free`, `is_active`, `is_reusable`,
+  `effective_priority`, `expires_at`, `refcount`) panic on out-of-range ids,
+  documented via `# Panics`. The trusted internal caller holds ids returned by
+  `allocate`/`longest_prefix` and never passes a stale id.

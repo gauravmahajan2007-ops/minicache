@@ -105,16 +105,24 @@ See [`SPEC_POOL.md`](SPEC_POOL.md) and the per-subsystem specs for the full cont
 
 ## Verification
 
-`cargo test` — **60 passed, 0 failed** (no GPU required; all time is simulated):
+`cargo test` — **64 passed, 0 failed** (no GPU required; all time is simulated):
 
 - **2,000 property-based cases** across four subsystems, each checked against its own
   independent reference model.
 - `cargo clippy --all-targets -- -D warnings` and `cargo fmt --check` are clean and run in CI.
 - A repair workflow is demonstrated per subsystem (faulty fixture → red → counterexample →
   fix → green); the committed counterexamples live in [`counterexamples/`](counterexamples/).
+- Switch-off verification for the retention invariants: I2 (`> vs >=`), I3 (LRU tie-break),
+  I4 (never evict active), I6 (reuse resets retention), I7 (invalidate idempotent) each have
+  a faulty fixture proving the guard is load-bearing. The `BlockManager` oracle derives the
+  free set by scanning rather than mirroring the implementation's free-list structure, so it is
+  genuinely independent (it would catch a FIFO allocation-order bug).
+- The allocation order honors "lowest `BlockId` first" (SPEC_RETENTION.md §4.1); out-of-range
+  `BlockId`s are guarded on the mutating methods (`release` → `InvalidBlock`, `acquire` →
+  `false`, `invalidate` → no-op) and documented via `# Panics` on the read queries.
 
 ```sh
-cargo test                              # full suite (60 tests)
+cargo test                              # full suite (64 tests)
 cargo check --features cuda             # type-check the GPU CudaPool (link/run needs CUDA)
 ```
 

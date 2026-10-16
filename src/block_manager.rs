@@ -6,7 +6,7 @@
 //!
 //! See `SPEC_RETENTION.md` for the authoritative contract.
 
-use std::collections::VecDeque;
+use std::collections::BTreeSet;
 
 use crate::retention::{Retention, RetentionError, DEFAULT_PRIORITY};
 use crate::SimulatedClock;
@@ -34,7 +34,7 @@ pub struct BlockManager {
     clock: SimulatedClock,
     generation: u64,
     blocks: Vec<BlockState>,
-    free: VecDeque<BlockId>,
+    free: BTreeSet<BlockId>,
 }
 
 impl BlockManager {
@@ -86,7 +86,7 @@ impl BlockManager {
     }
 
     pub fn allocate(&mut self) -> Option<BlockId> {
-        if let Some(id) = self.free.pop_front() {
+        if let Some(id) = self.free.pop_first() {
             self.blocks[id as usize] = BlockState::Active { refcount: 1 };
             return Some(id);
         }
@@ -112,6 +112,9 @@ impl BlockManager {
     }
 
     pub fn release(&mut self, id: BlockId, retention: Retention) -> Result<(), RetentionError> {
+        if id as usize >= self.blocks.len() {
+            return Err(RetentionError::InvalidBlock(id));
+        }
         let state = self.blocks[id as usize];
         match state {
             BlockState::Active { refcount } => {
@@ -136,6 +139,9 @@ impl BlockManager {
     }
 
     pub fn acquire(&mut self, id: BlockId) -> bool {
+        if id as usize >= self.blocks.len() {
+            return false;
+        }
         let state = self.blocks[id as usize];
         match state {
             BlockState::Active { refcount } => {
@@ -153,29 +159,38 @@ impl BlockManager {
     }
 
     pub fn invalidate(&mut self, id: BlockId) {
+        if id as usize >= self.blocks.len() {
+            return;
+        }
         if self.blocks[id as usize] != BlockState::Free {
             self.blocks[id as usize] = BlockState::Free;
-            self.free.push_back(id);
+            self.free.insert(id);
         }
     }
 
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn state(&self, id: BlockId) -> BlockState {
         self.blocks[id as usize]
     }
 
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn is_free(&self, id: BlockId) -> bool {
         matches!(self.blocks[id as usize], BlockState::Free)
     }
 
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn is_active(&self, id: BlockId) -> bool {
         matches!(self.blocks[id as usize], BlockState::Active { .. })
     }
 
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn is_reusable(&self, id: BlockId) -> bool {
         matches!(self.blocks[id as usize], BlockState::Reusable { .. })
     }
 
     /// Effective priority of a reusable block; `None` for free/active blocks.
+    ///
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn effective_priority(&self, id: BlockId) -> Option<u8> {
         match self.blocks[id as usize] {
             BlockState::Reusable { .. } => Some(Self::effective_priority_of(
@@ -188,6 +203,8 @@ impl BlockManager {
 
     /// Absolute expiry time of a reusable block's priority; `None` for
     /// free/active blocks, or for a reusable block with no duration.
+    ///
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn expires_at(&self, id: BlockId) -> Option<Option<f64>> {
         match self.blocks[id as usize] {
             BlockState::Reusable { expires_at, .. } => Some(expires_at),
@@ -196,6 +213,8 @@ impl BlockManager {
     }
 
     /// Refcount of an active block; `None` otherwise.
+    ///
+    /// Panics if `id` is out of range (`id >= num_blocks`).
     pub fn refcount(&self, id: BlockId) -> Option<u32> {
         match self.blocks[id as usize] {
             BlockState::Active { refcount } => Some(refcount),
